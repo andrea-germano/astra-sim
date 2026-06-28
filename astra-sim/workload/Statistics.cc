@@ -29,8 +29,14 @@ void Statistics::dump_csv(const std::string& path, uint64_t sys_id) const {
             default:                                           return "INVALID";
         }
     };
-    out << "sys_id,node_id,type,comm_size,start_tick,end_tick,duration,"
-           "bw_bytes_per_ns\n";
+    auto opt_d = [](const std::optional<double>& v) -> std::string {
+        return v ? fmt::format("{}", *v) : std::string();
+    };
+
+    out << "sys_id,node_id,name,type,comm_size,start_tick,end_tick,duration,"
+           "bw_bytes_per_ns,operation_intensity,compute_utilization,"
+           "memory_utilization,is_memory_bound\n";
+
     std::vector<const OperatorStatistics*> rows;
     rows.reserve(operator_statistics.size());
     for (const auto& kv : operator_statistics) rows.push_back(&kv.second);
@@ -38,13 +44,20 @@ void Statistics::dump_csv(const std::string& path, uint64_t sys_id) const {
               [](const OperatorStatistics* a, const OperatorStatistics* b) {
                   return a->start_time < b->start_time;
               });
+
     for (const auto* st : rows) {
-        out << sys_id << ',' << st->node_id << ',' << type_str(st->type) << ','
+        out << sys_id << ',' << st->node_id << ',' << st->name << ','
+            << type_str(st->type) << ','
             << (st->comm_size ? std::to_string(*st->comm_size) : "") << ','
             << st->start_time << ',' << st->end_time << ','
             << (st->end_time - st->start_time) << ','
-            << (st->network_bandwidth ? std::to_string(*st->network_bandwidth)
-                                      : "")
+            << opt_d(st->network_bandwidth) << ','
+            // --- colonne roofline (compute), opzionali: cancella le 4 righe se non le vuoi
+            << opt_d(st->operation_intensity) << ','
+            << opt_d(st->compute_utilization) << ','
+            << opt_d(st->memory_utilization) << ','
+            << (st->is_memory_bound ? (*st->is_memory_bound ? "1" : "0") : "")
+            // ---
             << '\n';
     }
     out.flush();
@@ -71,6 +84,7 @@ void Statistics::record_start(std::shared_ptr<Chakra::ETFeederNode> node,
     const auto type = OperatorStatistics::get_operator_type(node);
     operator_statistics[node_id] =
         OperatorStatistics(node_id, start_time, type);
+    operator_statistics[node_id].name = node->name();
     start_times.insert({start_time, node_id});
 }
 

@@ -48,6 +48,7 @@ class Statistics {
         Tick start_time;
         Tick end_time;
         OperatorType type;
+        std::string name;
 
         // compute node
         std::optional<double> memory_utilization;
