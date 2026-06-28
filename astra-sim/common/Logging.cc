@@ -29,8 +29,9 @@ std::shared_ptr<spdlog::logger> LoggerFactory::get_logger(
 
 void LoggerFactory::init(const std::string& log_config_path,
                          const std::string& log_path) {
+
     if (log_config_path != "empty") {
-        spdlog_setup::from_file(log_config_path);
+        spdlog_setup::from_file_with_tag_replacement(log_config_path, log_path);
     }
     init_default_components(log_path);
 }
@@ -45,7 +46,7 @@ void LoggerFactory::init_default_components(const std::string& log_path) {
     std::filesystem::path folderPath(log_path);
 
     if (!std::filesystem::exists(folderPath)) {
-        std::filesystem::create_directory(folderPath);
+        std::filesystem::create_directories(folderPath); //MODIFIED BY ANDREA, original is create_directory
     }
 
     auto sink_color_console =

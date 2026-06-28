@@ -202,6 +202,7 @@ string memory_configuration;
 string comm_group_configuration = "empty";
 string logical_topology_configuration;
 string logging_configuration = "empty";
+string logging_folder = "log"; // ADDED BY ANDREA
 int num_queues_per_dim = 1;
 double comm_scale = 1;
 double injection_scale = 1;
@@ -260,6 +261,9 @@ void parse_args(int argc, char* argv[]) {
                  logical_topology_configuration);
     cmd.AddValue("logging-configuration", "Logging configuration file",
                  logging_configuration);
+    
+    // ADDED BY ANDREA
+    cmd.AddValue("logging-folder", "Folder for log output", logging_folder);
 
     cmd.AddValue("num-queues-per-dim", "Number of queues per each dimension",
                  num_queues_per_dim);
@@ -279,7 +283,7 @@ int main(int argc, char* argv[]) {
 
     // Read network config and find logical dims.
     parse_args(argc, argv);
-    AstraSim::LoggerFactory::init(logging_configuration);
+    AstraSim::LoggerFactory::init(logging_configuration, logging_folder); // ADDED BY ANDREA, original is without logging_folder
     read_logical_topo_config(logical_topology_configuration, logical_dims);
 
     // Setup network & System layer.
