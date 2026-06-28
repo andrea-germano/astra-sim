@@ -6,10 +6,49 @@
 #include <map>
 #include <unordered_map>
 #include <vector>
+#include <fstream>
 
 using namespace AstraSim;
 
 Statistics::Statistics(Workload* workload) : workload(workload) {}
+
+void Statistics::dump_csv(const std::string& path, uint64_t sys_id) const {
+    std::ofstream out(path);
+    if (!out.is_open()) {
+        LoggerFactory::get_logger("statistics")
+            ->error("cannot open stats csv: {}", path);
+        return;
+    }
+    auto type_str = [](OperatorStatistics::OperatorType t) -> const char* {
+        switch (t) {
+            case OperatorStatistics::OperatorType::CPU:        return "CPU";
+            case OperatorStatistics::OperatorType::GPU:        return "GPU";
+            case OperatorStatistics::OperatorType::COMM:       return "COMM";
+            case OperatorStatistics::OperatorType::REMOTE_MEM: return "REMOTE_MEM";
+            case OperatorStatistics::OperatorType::REPLAY:     return "REPLAY";
+            default:                                           return "INVALID";
+        }
+    };
+    out << "sys_id,node_id,type,comm_size,start_tick,end_tick,duration,"
+           "bw_bytes_per_ns\n";
+    std::vector<const OperatorStatistics*> rows;
+    rows.reserve(operator_statistics.size());
+    for (const auto& kv : operator_statistics) rows.push_back(&kv.second);
+    std::sort(rows.begin(), rows.end(),
+              [](const OperatorStatistics* a, const OperatorStatistics* b) {
+                  return a->start_time < b->start_time;
+              });
+    for (const auto* st : rows) {
+        out << sys_id << ',' << st->node_id << ',' << type_str(st->type) << ','
+            << (st->comm_size ? std::to_string(*st->comm_size) : "") << ','
+            << st->start_time << ',' << st->end_time << ','
+            << (st->end_time - st->start_time) << ','
+            << (st->network_bandwidth ? std::to_string(*st->network_bandwidth)
+                                      : "")
+            << '\n';
+    }
+    out.flush();
+}
 
 Statistics::OperatorStatistics& Statistics::get_operator_statistics(
     NodeId node_id) {

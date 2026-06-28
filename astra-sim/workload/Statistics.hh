@@ -90,6 +90,8 @@ class Statistics {
 
     void report() const;
 
+    void dump_csv(const std::string& path, uint64_t sys_id) const;
+
   private:
     void extract_type_time();
     Tick _calculateTotalRuntimeFromIntervals(

@@ -5,6 +5,12 @@ namespace AstraSim {
 
 std::unordered_set<spdlog::sink_ptr> LoggerFactory::default_sinks;
 
+std::string LoggerFactory::log_path_ = "log"; //default log path
+
+const std::string& LoggerFactory::log_path() {
+    return log_path_;
+}
+
 std::shared_ptr<spdlog::logger> LoggerFactory::get_logger(
     const std::string& logger_name) {
     constexpr bool ENABLE_DEFAULT_SINK_FOR_OTHER_LOGGERS = true;
@@ -48,6 +54,7 @@ void LoggerFactory::init_default_components(const std::string& log_path) {
     if (!std::filesystem::exists(folderPath)) {
         std::filesystem::create_directories(folderPath); //MODIFIED BY ANDREA, original is create_directory
     }
+    log_path_ = log_path;
 
     auto sink_color_console =
         std::make_shared<spdlog::sinks::stdout_color_sink_mt>();

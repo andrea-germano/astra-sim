@@ -578,6 +578,7 @@ void Workload::report() {
                sys->id, curr_tick, curr_tick - hw_resource->tics_gpu_ops);
     stats->post_processing();
     stats->report();
+    stats->dump_csv(LoggerFactory::log_path() + "/stats_sys" + std::to_string(sys->id) + ".csv", sys->id);
     if (this->sys->track_local_mem) {
         this->local_mem_usage_tracker->buildMemoryTrace();
         this->local_mem_usage_tracker->buildMemoryTimeline();
