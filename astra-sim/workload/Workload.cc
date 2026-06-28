@@ -469,14 +469,6 @@ void Workload::call(EventType event, CallData* data) {
         shared_ptr<Chakra::FeederV3::ETFeederNode> node =
             et_feeder->lookupNode(node_id);
 
-        if (sys->trace_enabled) {
-            LoggerFactory::get_logger("workload")
-                ->debug("callback,sys->id={}, tick={}, node->id={}, "
-                        "node->name={}, node->type={}",
-                        sys->id, Sys::boostedTick(), node->id(), node->name(),
-                        static_cast<uint64_t>(node->type()));
-        }
-
         hw_resource->release(node);
         stats->record_end(node, Sys::boostedTick());
 
@@ -487,6 +479,16 @@ void Workload::call(EventType event, CallData* data) {
             double bandwidth =
                 static_cast<double>(op_stat.comm_size.value()) / execution_time;
             op_stat.network_bandwidth = bandwidth;
+        }
+
+        if (sys->trace_enabled) {
+            LoggerFactory::get_logger("workload")
+                ->debug("callback,sys->id={}, tick={}, node->id={}, "
+                        "node->name={}, node->type={}, comm_size={}, bw={}",
+                        sys->id, Sys::boostedTick(), node->id(), node->name(),
+                        static_cast<uint64_t>(node->type()),
+                        op_stat.comm_size.value_or(0),
+                        op_stat.network_bandwidth.value_or(0.0));
         }
 
         if (this->sys->track_local_mem) {
@@ -510,14 +512,6 @@ void Workload::call(EventType event, CallData* data) {
             shared_ptr<Chakra::FeederV3::ETFeederNode> node =
                 et_feeder->lookupNode(wlhd->node_id);
 
-            if (sys->trace_enabled) {
-                LoggerFactory::get_logger("workload")
-                    ->debug("callback,sys->id={}, tick={}, node->id={}, "
-                            "node->name={}, node->type={}",
-                            sys->id, Sys::boostedTick(), node->id(),
-                            node->name(), static_cast<uint64_t>(node->type()));
-            }
-
             hw_resource->release(node);
             stats->record_end(node, Sys::boostedTick());
 
@@ -534,6 +528,18 @@ void Workload::call(EventType event, CallData* data) {
                         execution_time;
                     op_stat.network_bandwidth = bandwidth;
                 }
+            }
+
+            if (sys->trace_enabled) {
+                auto& op_stat = stats->get_operator_statistics(wlhd->node_id);
+                LoggerFactory::get_logger("workload")
+                    ->debug("callback,sys->id={}, tick={}, node->id={}, "
+                            "node->name={}, node->type={}, comm_size={}, bw={}",
+                            sys->id, Sys::boostedTick(), node->id(),
+                            node->name(),
+                            static_cast<uint64_t>(node->type()),
+                            op_stat.comm_size.value_or(0),
+                            op_stat.network_bandwidth.value_or(0.0));
             }
 
             if (this->sys->track_local_mem) {
