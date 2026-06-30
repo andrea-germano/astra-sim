@@ -433,6 +433,15 @@ bool Sys::initialize_sys(string name) {
         }
     }
 
+    this->qos_enabled = false;
+    if (j.contains("qos-enabled")) {
+        if (j["qos-enabled"] != 0) {
+            this->qos_enabled = true;
+        } else {
+            this->qos_enabled = false;
+        }
+    }
+
     collective_impl_lookup->setup_collective_impl_from_config(j);
 
     inFile.close();

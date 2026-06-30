@@ -123,11 +123,12 @@ map<MsgEventKey, int> received_msg_standby_hash;
 // send_flow commands the ns3 simulator to schedule a RDMA message to be sent
 // between two pair of nodes. send_flow is triggered by sim_send.
 void send_flow(int src_id, int dst, int maxPacketCount,
-               void (*msg_handler)(void *fun_arg), void *fun_arg, int tag) {
+               void (*msg_handler)(void *fun_arg), void *fun_arg, int tag, int pg_in = 3) {
   // Get a new port number.
   uint32_t port = portNumber[src_id][dst]++;
   sender_src_port_map[make_pair(port, make_pair(src_id, dst))] = tag;
-  int pg = 3, dport = 100;
+  int pg = (pg_in<1 || pg_in>7) ? 3 : pg_in; // default pg remains 3
+  int dport = 100;
   flow_input.idx++;
 
   // Create a MsgEvent instance and register callback function.

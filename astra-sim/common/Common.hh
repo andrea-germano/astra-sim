@@ -33,6 +33,7 @@ struct sim_request {
     uint64_t reqCount;
     uint32_t vnet;
     uint32_t layerNum;
+    uint32_t pg = 3;
 };
 
 class MetaData {

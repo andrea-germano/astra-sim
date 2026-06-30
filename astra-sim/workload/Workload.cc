@@ -406,6 +406,13 @@ void Workload::issue_send_comm(
     snd_req.srcRank = src;
     snd_req.dstRank = dst;
     snd_req.reqType = UINT8;
+    if (sys->qos_enabled){
+        if (node->has_attr("net_pg")) {
+            snd_req.pg = node->get_attr_msg("net_pg").int32_val();
+        } else {
+            snd_req.pg = 3; // default pg
+        }
+    }
     SendPacketEventHandlerData* sehd = new SendPacketEventHandlerData;
     sehd->callable = this;
     sehd->wlhd = new WorkloadLayerHandlerData;
