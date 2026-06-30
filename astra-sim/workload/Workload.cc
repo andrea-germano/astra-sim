@@ -46,7 +46,7 @@ Workload::Workload(Sys* sys, string et_filename, string comm_group_filename) {
     this->et_feeder = new ETFeeder(workload_filename);
     this->comm_groups.clear();
     // TODO: parametrize the number of available hardware resources
-    this->hw_resource = new HardwareResource(1, sys->id);
+    this->hw_resource = new HardwareResource(1, sys->id, sys->unlimited_in_flight_comm_ops);
     this->local_mem_usage_tracker =
         std::make_unique<LocalMemUsageTracker>(sys->id);
     this->sys = sys;

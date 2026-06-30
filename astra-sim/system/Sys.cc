@@ -424,6 +424,15 @@ bool Sys::initialize_sys(string name) {
         this->local_mem_trace_filename = j["local-mem-trace-filename"];
     }
 
+    this->unlimited_in_flight_comm_ops = false;
+    if (j.contains("unlimited-in-flight-comm-ops")) {
+        if (j["unlimited-in-flight-comm-ops"] != 0) {
+            this->unlimited_in_flight_comm_ops = true;
+        } else {
+            this->unlimited_in_flight_comm_ops = false;
+        }
+    }
+
     collective_impl_lookup->setup_collective_impl_from_config(j);
 
     inFile.close();

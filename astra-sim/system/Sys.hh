@@ -284,6 +284,7 @@ class Sys : public Callable {
     AstraNetworkAPI* comm_NI;
     double comm_scale;
     bool rendezvous_enabled;
+    bool unlimited_in_flight_comm_ops;
 
     // scheduler
     SchedulerUnit* scheduler_unit;

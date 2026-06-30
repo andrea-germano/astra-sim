@@ -13,11 +13,12 @@ using namespace Chakra;
 
 typedef ChakraProtoMsg::NodeType ChakraNodeType;
 
-HardwareResource::HardwareResource(uint32_t num_npus, int sys_id)
+HardwareResource::HardwareResource(uint32_t num_npus, int sys_id, bool unlimited_in_flight_comm_ops = false)
     : num_npus(num_npus),
       num_in_flight_cpu_ops(0),
       num_in_flight_gpu_comm_ops(0),
       num_in_flight_gpu_comp_ops(0),
+      unlimited_in_flight_comm_ops(unlimited_in_flight_comm_ops),
       sys_id(sys_id) {
 
     num_cpu_ops = 0;
@@ -51,7 +52,9 @@ void HardwareResource::occupy(
             if (node->type() == ChakraNodeType::COMM_RECV_NODE) {
                 return;
             }
-            assert(num_in_flight_gpu_comm_ops == 0);
+            if (!unlimited_in_flight_comm_ops) {
+                assert(num_in_flight_gpu_comm_ops == 0);
+            }
             ++num_in_flight_gpu_comm_ops;
             ++num_gpu_comms;
             // gpu_comms_node = node;
@@ -76,7 +79,9 @@ void HardwareResource::release(
                 return;
             }
             --num_in_flight_gpu_comm_ops;
-            assert(num_in_flight_gpu_comm_ops == 0);
+            if(!unlimited_in_flight_comm_ops) {
+                assert(num_in_flight_gpu_comm_ops == 0);
+            }
             this->gpu_comms_node.erase(node->id());
         }
     }
@@ -84,33 +89,16 @@ void HardwareResource::release(
 
 bool HardwareResource::is_available(
     const shared_ptr<Chakra::FeederV3::ETFeederNode> node) const {
-    if (node->is_cpu_op()) {
-        if (num_in_flight_cpu_ops == 0) {
-            return true;
-        } else {
-            return false;
-        }
-    } else {
-        if (node->type() == ChakraNodeType::COMP_NODE) {
-            if (num_in_flight_gpu_comp_ops == 0) {
-                return true;
-            } else {
-                return false;
-            }
-        } else {
-            if (num_in_flight_gpu_comm_ops == 0) {
-                return true;
-            } else {
-                if (node->type() == ChakraNodeType::COMM_RECV_NODE) {
-                    return true;
-                }
-                if (num_in_flight_gpu_comm_ops == 0) {
-                    return true;
-                }
-                return false;
-            }
-        }
+    if (node->is_cpu_op())                              
+        return num_in_flight_cpu_ops == 0;
+    if (node->type() == ChakraNodeType::COMP_NODE)      
+        return num_in_flight_gpu_comp_ops == 0;
+    if (node->type() == ChakraNodeType::COMM_RECV_NODE) 
+        return true; // recv nodes are always available
+    if (!unlimited_in_flight_comm_ops) {
+        return num_in_flight_gpu_comm_ops == 0;
     }
+    return unlimited_in_flight_comm_ops;
 }
 
 void HardwareResource::report() {

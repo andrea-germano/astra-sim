@@ -17,7 +17,7 @@ namespace AstraSim {
 
 class HardwareResource {
   public:
-    HardwareResource(uint32_t num_npus, int sys_id = -1);
+    HardwareResource(uint32_t num_npus, int sys_id = -1, bool unlimited_in_flight_comm_ops = false);
     ~HardwareResource() {
         auto logger = LoggerFactory::get_logger("HardwareResource");
         if (this->num_in_flight_cpu_ops != 0 ||
@@ -53,6 +53,7 @@ class HardwareResource {
     uint32_t num_in_flight_cpu_ops;
     uint32_t num_in_flight_gpu_comp_ops;
     uint32_t num_in_flight_gpu_comm_ops;
+    const bool unlimited_in_flight_comm_ops;
 
     uint64_t num_cpu_ops;
     uint64_t num_gpu_ops;
