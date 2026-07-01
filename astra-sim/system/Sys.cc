@@ -442,6 +442,15 @@ bool Sys::initialize_sys(string name) {
         }
     }
 
+    this->csv_output_enabled = false;
+    if (j.contains("csv-output-enabled")) {
+        if (j["csv-output-enabled"] != 0) {
+            this->csv_output_enabled = true;
+        } else {
+            this->csv_output_enabled = false;
+        }
+    }
+
     collective_impl_lookup->setup_collective_impl_from_config(j);
 
     inFile.close();

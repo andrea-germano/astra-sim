@@ -286,6 +286,7 @@ class Sys : public Callable {
     bool rendezvous_enabled;
     bool unlimited_in_flight_comm_ops;
     bool qos_enabled;
+    bool csv_output_enabled;
 
     // scheduler
     SchedulerUnit* scheduler_unit;
