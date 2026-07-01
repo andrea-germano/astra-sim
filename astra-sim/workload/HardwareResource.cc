@@ -13,11 +13,11 @@ using namespace Chakra;
 
 typedef ChakraProtoMsg::NodeType ChakraNodeType;
 
-HardwareResource::HardwareResource(uint32_t num_npus, int sys_id, bool unlimited_in_flight_comm_ops = false)
+HardwareResource::HardwareResource(uint32_t num_npus, int sys_id, bool unlimited_in_flight_comm_ops)
     : num_npus(num_npus),
       num_in_flight_cpu_ops(0),
-      num_in_flight_gpu_comm_ops(0),
       num_in_flight_gpu_comp_ops(0),
+      num_in_flight_gpu_comm_ops(0),
       unlimited_in_flight_comm_ops(unlimited_in_flight_comm_ops),
       sys_id(sys_id) {
 

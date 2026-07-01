@@ -406,12 +406,20 @@ void Workload::issue_send_comm(
     snd_req.srcRank = src;
     snd_req.dstRank = dst;
     snd_req.reqType = UINT8;
-    if (sys->qos_enabled){
-        if (node->has_attr("net_pg")) {
-            snd_req.pg = node->get_attr_msg("net_pg").int32_val();
+    if (sys->qos_enabled) {
+        if (node->has_attr("comm_qos_pg")){
+            int32_t value = node->get_attr_msg("comm_qos_pg").int32_val();
+            if (value < 1 || value > 7) {
+                LoggerFactory::get_logger("workload")->warn("Invalid comm_qos_pg value: {}. Using default pg=3", value);
+                value = 3; // default pg
+            }
+            snd_req.pg = value;
         } else {
+            LoggerFactory::get_logger("workload")->warn("comm_qos_pg attribute not found for node {}. Using default pg=3", node->id());
             snd_req.pg = 3; // default pg
         }
+    } else {
+        snd_req.pg = 3; // default pg
     }
     SendPacketEventHandlerData* sehd = new SendPacketEventHandlerData;
     sehd->callable = this;
